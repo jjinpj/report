@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공문서 작성 도우미</title>
+<style>
+:root{--navy:#193653;--blue:#28577d;--line:#cbd3dc;--muted:#64748b;--bg:#eef2f6}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Malgun Gothic","맑은 고딕",Arial,sans-serif;background:var(--bg);color:#202a35}
+header{background:var(--navy);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:20px;margin:0;font-weight:700}
+header span{font-size:12px;opacity:.8}
+.workspace{display:grid;grid-template-columns:minmax(320px,420px) minmax(600px,1fr);gap:22px;padding:22px;max-width:1600px;margin:auto;align-items:start}
+.panel{background:#fff;border:1px solid #d8e0e8;border-radius:10px;padding:20px;box-shadow:0 3px 12px #1b35500d}
+.panel h2{font-size:16px;margin:0 0 16px;color:var(--navy)}
+.field{margin-bottom:13px}
+label{display:block;font-size:12px;font-weight:700;color:#465568;margin-bottom:6px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:9px 10px;font:13px inherit;color:#202a35;background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#477ba5;box-shadow:0 0 0 2px #477ba51a}
+textarea{resize:vertical;min-height:76px;line-height:1.6}
+#bodyText{min-height:220px}
+#attachment{min-height:58px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.preview-wrap{overflow:auto;background:#dfe5eb;padding:18px;border-radius:8px}
+.paper{width:210mm;min-height:297mm;margin:0 auto;background:#fff;padding:19mm 19mm 17mm;box-shadow:0 3px 16px #26384b20;color:#111;font-family:"Malgun Gothic","맑은 고딕",serif;font-size:11pt;position:relative}
+.doc-org{text-align:center;font-size:19pt;font-weight:700;letter-spacing:2px;padding:0 0 12px;border-bottom:2px solid #222;margin-bottom:13px}
+.doc-meta{width:100%;border-collapse:collapse;font-size:9.5pt;margin-bottom:12px}
+.doc-meta td{padding:4px 6px;vertical-align:top}
+.meta-label{width:75px;color:#333;font-weight:700}
+.approval{margin-left:auto;border-collapse:collapse;margin-bottom:15px;font-size:9pt;text-align:center}
+.approval th,.approval td{border:1px solid #333;width:75px;padding:5px}
+.approval th{background:#f3f4f6;font-weight:700}
+.approval td{height:55px;vertical-align:bottom}
+.doc-recipient{font-size:10.5pt;margin:10px 0 17px;line-height:1.6}
+.doc-title{text-align:center;font-size:16pt;font-weight:700;margin:14px 0 22px;min-height:25px}
+.doc-body{font-size:11pt;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;min-height:350px}
+.doc-attachment{font-size:10.5pt;line-height:1.7;white-space:pre-wrap;margin-top:20px}
+.doc-footer{border-top:1px solid #555;margin-top:25px;padding-top:10px;display:flex;justify-content:space-between;gap:12px;font-size:9.5pt}
+.doc-contact{white-space:pre-wrap}
+.doc-end{text-align:center;letter-spacing:5px;font-weight:700;margin-top:26px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{border:0;border-radius:7px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;background:var(--blue);color:white}
+button:hover{filter:brightness(1.08)}
+button.secondary{background:#536579}
+button.danger{background:#8b3e43}
+.status{font-size:11px;color:var(--muted);margin-top:10px;min-height:16px}
+.hint{font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 15px}
+@media(max-width:1050px){.workspace{grid-template-columns:1fr}.preview-wrap{padding:10px}.paper{margin:0;}}
+@media print{
+ @page{size:A4;margin:0}
+ body{background:#fff}
+ header,.form-panel,.actions,.status,.hint{display:none!important}
+ .workspace{display:block;padding:0;margin:0;max-width:none}
+ .preview-panel{border:0;padding:0;box-shadow:none}
+ .preview-panel h2{display:none}
+ .preview-wrap{padding:0;background:#fff;overflow:visible}
+ .paper{width:210mm;min-height:297mm;margin:0;box-shadow:none;padding:19mm 19mm 17mm;page-break-after:avoid}
+}
+</style>
+</head>
+<body>
+<header><h1>공문서 작성 도우미</h1><span>공공기관 문서 서식 · A4 미리보기</span></header>
+<main class="workspace">
+<section class="panel form-panel">
+<h2>문서 정보 입력</h2>
+<p class="hint">입력 내용은 브라우저에 자동으로 임시 보관됩니다. 같은 브라우저에서 다시 열거나 새로고침해도 유지됩니다.</p>
+<div class="field"><label for="org">기관 / 부서명</label><input id="org" placeholder="예: ○○기관 ○○부"></div>
+<div class="grid2">
+<div class="field"><label for="docNo">문서번호</label><input id="docNo" placeholder="예: 총무과-1234"></div>
+<div class="field"><label for="date">시행일자</label><input id="date" type="date"></div>
+</div>
+<div class="field"><label for="open">공개구분</label><select id="open"><option>공개</option><option>부분공개</option><option>비공개</option></select></div>
+<div class="grid2">
+<div class="field"><label for="to">수신</label><input id="to" placeholder="수신 기관 / 담당자"></div>
+<div class="field"><label for="ref">참조</label><input id="ref" placeholder="참조 부서 / 담당자"></div>
+</div>
+<div class="field"><label for="title">제목</label><input id="title" placeholder="공문서 제목을 입력하세요"></div>
+<div class="field"><label for="bodyText">본문</label><textarea id="bodyText" placeholder="본문 내용을 입력하세요.&#10;항목별 내용은 줄을 바꾸어 작성할 수 있습니다."></textarea></div>
+<div class="field"><label for="attachment">붙임</label><textarea id="attachment" placeholder="예: 1. 관련 자료 1부.&#10;      2. 세부 계획서 1부. 끝."></textarea></div>
+<div class="field"><label for="contact">담당자 및 연락처</label><input id="contact" placeholder="예: 담당 홍길동 / 전화 02-000-0000"></div>
+<div class="field"><label>결재란 (3칸)</label><p class="hint">결재란은 미리보기 상단에 담당·검토·결재 3칸으로 표시됩니다.</p></div>
+<div class="actions">
+<button type="button" id="saveBtn">저장</button>
+<button type="button" id="wordBtn">워드파일(.doc)</button>
+<button type="button" id="printBtn">pdf인쇄</button>
+<button type="button" class="danger" id="resetBtn">초기화</button>
+</div>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+</section>
+<section class="panel preview-panel">
+<h2>A4 공문서 미리보기</h2>
+<div class="preview-wrap">
+<article class="paper" id="paper">
+<div class="doc-org" id="pOrg">기관 / 부서명</div>
+<table class="doc-meta">
+<tr><td class="meta-label">문서번호</td><td id="pDocNo">-</td><td class="meta-label">시행일자</td><td id="pDate">-</td></tr>
+<tr><td class="meta-label">공개구분</td><td colspan="3" id="pOpen">공개</td></tr>
+</table>
+<table class="approval">
+<tr><th>담당</th><th>검토</th><th>결재</th></tr>
+<tr><td></td><td></td><td></td></tr>
+</table>
+<div class="doc-recipient"><div><strong>수신</strong>　<span id="pTo">-</span></div><div><strong>참조</strong>　<span id="pRef">-</span></div></div>
+<div class="doc-title" id="pTitle">제목</div>
+<div class="doc-body" id="pBody"></div>
+<div class="doc-attachment" id="pAttachment"></div>
+<div class="doc-footer"><div class="doc-contact" id="pContact">담당자 및 연락처</div><div id="pOrgFooter"></div></div>
+<div class="doc-end">끝.</div>
+</article>
+</div>
+</section>
+</main>
+<script>
+(() => {
+ const ids = ["org","docNo","date","open","to","ref","title","bodyText","attachment","contact"];
+ const storageKey = "officialDocumentDraft_v1";
+ const $ = id => document.getElementById(id);
+ const fields = Object.fromEntries(ids.map(id => [id,$(id)]));
+ const previewMap = {org:"pOrg",docNo:"pDocNo",date:"pDate",open:"pOpen",to:"pTo",ref:"pRef",title:"pTitle",bodyText:"pBody",attachment:"pAttachment",contact:"pContact"};
+ const val = id => fields[id].value.trim();
+ function updatePreview(){
+   for(const id of ids){
+     const target = $(previewMap[id]);
+     let value = val(id);
+     if(id==="date" && value){const [y,m,d]=value.split("-");value=`${y}. ${m}. ${d}.`;}
+     if(id==="org") target.textContent=value||"기관 / 부서명";
+     else if(id==="title") target.textContent=value||"제목";
+     else if(id==="bodyText") target.textContent=value||"";
+     else if(id==="attachment") target.textContent=value?`붙임\n${value}`:"";
+     else if(id==="contact") target.textContent=value||"담당자 및 연락처";
+     else target.textContent=value||"-";
+   }
+   $("pOrgFooter").textContent=val("org");
+ }
+ function saveDraft(showMessage=true){
+   const data={}; for(const id of ids)data[id]=fields[id].value;
+   try{localStorage.setItem(storageKey,JSON.stringify(data));if(showMessage)$("status").textContent="현재 내용이 브라우저에 임시 저장되었습니다.";}
+   catch(e){$("status").textContent="저장할 수 없습니다. 브라우저 저장 공간 또는 개인정보 보호 설정을 확인하세요.";}
+ }
+ function loadDraft(){
+   try{
+     const raw=localStorage.getItem(storageKey);
+     if(raw){const data=JSON.parse(raw);for(const id of ids)if(typeof data[id]==="string")fields[id].value=data[id];}
+   }catch(e){$("status").textContent="저장된 내용을 불러오지 못했습니다.";}
+   updatePreview();
+ }
+ ids.forEach(id=>fields[id].addEventListener("input",()=>{updatePreview();saveDraft(false);}));
+ $("saveBtn").addEventListener("click",()=>saveDraft(true));
+ $("printBtn").addEventListener("click",()=>window.print());
+ $("resetBtn").addEventListener("click",()=>{
+   if(!confirm("입력한 내용을 모두 지우고 임시 저장 내용도 삭제할까요?"))return;
+   for(const id of ids)fields[id].value="";
+   fields.open.value="공개";
+   try{localStorage.removeItem(storageKey);}catch(e){}
+   updatePreview();$("status").textContent="문서가 초기화되었습니다.";
+ });
+ $("wordBtn").addEventListener("click",()=>{
+   updatePreview();
+   const paper=$("paper").cloneNode(true);
+   const css=`<style>@page{size:A4;margin:19mm}body{font-family:'Malgun Gothic','맑은 고딕',serif;color:#111;font-size:11pt}.paper{width:100%;min-height:250mm;padding:0}.doc-org{text-align:center;font-size:19pt;font-weight:bold;letter-spacing:2px;padding-bottom:12px;border-bottom:2px solid #222;margin-bottom:13px}.doc-meta,.approval{border-collapse:collapse;width:100%;font-size:10pt}.doc-meta td{padding:5px}.meta-label{font-weight:bold;width:75px}.approval{width:auto;margin:0 0 15px auto;text-align:center}.approval th,.approval td{border:1px solid #333;width:75px;padding:5px}.approval td{height:55px;vertical-align:bottom}.doc-recipient{margin:10px 0 17px;line-height:1.6}.doc-title{text-align:center;font-size:16pt;font-weight:bold;margin:14px 0 22px}.doc-body{font-size:11pt;line-height:1.9;white-space:pre-wrap;min-height:300px}.doc-attachment{white-space:pre-wrap;margin-top:20px;line-height:1.7}.doc-footer{border-top:1px solid #555;margin-top:25px;padding-top:10px;display:flex;justify-content:space-between;font-size:9.5pt}.doc-end{text-align:center;letter-spacing:5px;font-weight:bold;margin-top:26px}</style>`;
+   const html=`<!DOCTYPE html><html><head><meta charset="utf-8">${css}</head><body>${paper.outerHTML}</body></html>`;
+   const blob=new Blob(["\ufeff",html],{type:"application/msword;charset=utf-8"});
+   const url=URL.createObjectURL(blob);const a=document.createElement("a");
+   a.href=url;a.download="공문서.doc";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+   $("status").textContent="Word에서 열 수 있는 .doc 파일을 생성했습니다.";
+ });
+ loadDraft();
+})();
+</script>
+</body>
+</html>
